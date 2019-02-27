@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 
 import Header from './layout/Header';
 import Dashboard from './animals/Dashboard';
+import Time from './animals/Time';
 
 class App extends React.Component {
 	render(){
@@ -14,6 +15,7 @@ class App extends React.Component {
 				<div className="container">
 					<Dashboard />
 				</div>
+				<Time />
 			</Fragment>
 		</Fragment>
 		);
