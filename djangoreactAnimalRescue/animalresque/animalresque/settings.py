@@ -11,10 +11,14 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
+from configparser import RawConfigParser
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+#Ruta de archivo que contiene variables de entorno de django
+config = RawConfigParser()
+config.read(BASE_DIR + '/settings.ini')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
@@ -78,8 +82,12 @@ WSGI_APPLICATION = 'animalresque.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': config.get('djangoDB', 'DB_ENGINE'),
+        'NAME': config.get('djangoDB', 'DB_NAME'),
+        'USER': config.get('djangoDB', 'DB_USER'),
+        'PASSWORD': config.get('djangoDB', 'DB_PASS'),
+        'HOST': config.get('djangoDB', 'DB_HOST'),
+        'PORT': config.get('djangoDB', 'DB_PORT'),
     }
 }
 
@@ -121,3 +129,119 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+###################################################################
+##### CONFIG LOGGING
+###################################################################
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+        'standard': {
+            'format': '%(asctime)s %(levelname)s %(name)s %(message)s'
+        },
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+        },
+        'default': {
+            'level':'DEBUG',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR + '/logs/default.log',
+            'maxBytes': 1024*1024*5, # 5 MB
+            'backupCount': 5,
+            'formatter':'standard',
+        },
+        'debug_file': {
+            'level':'DEBUG',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR + '/logs/debug.log',
+            'maxBytes': 1024*1024*5, # 5 MB
+            'backupCount': 5,
+            'formatter':'standard',
+        },
+        'warning_file': {
+            'level':'WARNING',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR + '/logs/warning.log',
+            'maxBytes': 1024*1024*5, # 5 MB
+            'backupCount': 5,
+            'formatter':'standard',
+        },
+        'info_file': {
+            'level':'INFO',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR + '/logs/info.log',
+            'maxBytes': 1024*1024*5, # 5 MB
+            'backupCount': 5,
+            'formatter':'standard',
+        },
+        'error_file': {
+            'level':'ERROR',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR + '/logs/error.log',
+            'maxBytes': 1024*1024*5, # 5 MB
+            'backupCount': 5,
+            'formatter':'standard',
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+        },
+        'emails': {
+            'level':'DEBUG',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR + '/logs/emails.log',
+            'maxBytes': 1024*1024*5, # 5 MB
+            'backupCount': 5,
+            'formatter':'standard',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'debug_logger': {
+            'handlers': ['debug_file'],
+            'level': 'DEBUG',
+            'propagate': True
+        },
+        'info_logger': {
+            'handlers': ['info_file'],
+            'level': 'INFO',
+            'propagate': True
+        },
+        'error_logger': {
+            'handlers': ['error_file'],
+            'level': 'ERROR',
+            'propagate': True
+        },
+        'django.request': {
+            'handlers': ['default', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'emails': {
+            'handlers': ['emails'],
+            'level': 'DEBUG',
+            'propagate': True
+        },
+
+    }
+}
